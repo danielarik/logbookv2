@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Logbook Pro v2</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+
+<body class="bg-slate-50 text-slate-900">
+
+    <div id="loader" class="fixed inset-0 bg-white z-[999] flex items-center justify-center">
+        <div class="flex flex-col items-center">
+            <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <p class="mt-4 text-slate-500 font-bold animate-pulse uppercase tracking-widest text-xs">Menghubungkan...
+            </p>
+        </div>
+    </div>
+
+    <section id="auth-section" class="hidden min-h-screen flex items-center justify-center p-4">
+        <div id="auth-container" class="bg-white w-full max-w-md rounded-3xl p-8 shadow-2xl">
+        </div>
+    </section>
+
+    <div id="app-section" class="hidden">
+
+        <aside id="sidebar"
+            class="sidebar fixed left-0 top-0 h-full w-64 bg-slate-900 text-slate-300 p-6 shadow-2xl md:block no-print">
+            <div class="mb-10">
+                <h1 class="text-white text-xl font-black tracking-tighter italic">LOGBOOK<span
+                        class="text-blue-500">PRO</span></h1>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Versi 2.0 - Clean</p>
+            </div>
+
+            <nav class="space-y-2" id="main-nav">
+            </nav>
+
+            <div class="absolute bottom-10 left-6 right-6">
+                <button onclick="handleLogout()"
+                    class="w-full text-left p-3 text-red-400 hover:bg-red-950/30 rounded-xl transition font-bold text-sm">Keluar</button>
+            </div>
+        </aside>
+
+        <main class="main-content md:ml-64 min-h-screen transition-all duration-300">
+
+            <header
+                class="md:hidden no-print sticky top-0 bg-white/80 backdrop-blur-md p-4 flex justify-between items-center z-40 border-b">
+                <span class="font-black italic">LOGBOOK<span class="text-blue-600">PRO</span></span>
+                <button onclick="toggleSidebar()" class="p-2 bg-slate-100 rounded-lg text-xl">☰</button>
+            </header>
+
+            <div id="content-area" class="p-4 md:p-10 max-w-6xl mx-auto">
+            </div>
+        </main>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="app.js"></script>
+    <script src="render.js"></script>
+</body>
+
+</html>
