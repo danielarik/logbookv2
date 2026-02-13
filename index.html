@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Logbook Pro v2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Responsif Sidebar */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: 0.3s;
+                z-index: 100;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0 !important;
+            }
+        }
+
+        /* Mode Viewer (Atasan) */
+        body.mode-viewer .admin-only {
+            display: none !important;
+        }
+
+        body.mode-viewer .main-content {
+            margin-left: 0 !important;
+            width: 100% !important;
+        }
+
+        /* Tabel Scrollable di HP */
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        table {
+            min-width: 850px;
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 9pt;
+        }
+
+        th,
+        td {
+            border: 1px solid #000;
+            padding: 4px;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-900">
+
+    <div id="auth-overlay" class="fixed inset-0 bg-slate-900 z-[200] flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-3xl p-8 shadow-2xl">
+            <h2 id="auth-title" class="text-2xl font-black mb-2 uppercase tracking-tighter text-blue-600">E-LOGBOOK PRO
+            </h2>
+            <p id="auth-subtitle" class="text-slate-500 text-sm mb-6">Silakan masuk untuk melanjutkan.</p>
+            <div class="space-y-4">
+                <input type="email" id="auth-email" placeholder="Email"
+                    class="w-full p-4 bg-slate-100 rounded-2xl outline-none focus:ring-2 ring-blue-500">
+                <input type="password" id="auth-password" placeholder="Password"
+                    class="w-full p-4 bg-slate-100 rounded-2xl outline-none focus:ring-2 ring-blue-500">
+                <button onclick="handleAuth()" id="btn-auth"
+                    class="w-full bg-blue-600 text-white p-4 rounded-2xl font-bold shadow-lg hover:bg-blue-700 transition-all uppercase">Masuk</button>
+                <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2">
+                    <button onclick="toggleAuthMode()" id="toggle-text">Daftar Akun Baru</button>
+                    <button onclick="forgotPassword()" class="text-red-400">Lupa Password?</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <aside id="sidebar"
+        class="sidebar admin-only fixed left-0 top-0 h-full w-64 bg-slate-900 text-slate-400 p-6 shadow-2xl md:block hidden">
+        <h1 class="text-white text-xl font-black mb-10 tracking-tighter">LOGBOOK PRO</h1>
+        <nav class="space-y-2">
+            <button onclick="logout()"
+                class="w-full text-left px-4 py-3 text-red-400 hover:bg-red-900/20 rounded-xl transition mt-20 font-bold">Keluar</button>
+        </nav>
+    </aside>
+
+    <main class="main-content md:ml-64 p-4 md:p-10">
+        <div class="no-print bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-8 max-w-5xl mx-auto">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 items-end">
+                <div>
+                    <label
+                        class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">Bulan</label>
+                    <select id="f-bulan" class="w-full bg-slate-100 p-3 rounded-xl text-sm outline-none border-none">
+                        <option value="0">Januari</option>
+                        <option value="1">Februari</option>
+                        <option value="2">Maret</option>
+                        <option value="3">April</option>
+                        <option value="4">Mei</option>
+                        <option value="5">Juni</option>
+                        <option value="6">Juli</option>
+                        <option value="7">Agustus</option>
+                        <option value="8">September</option>
+                        <option value="9">Oktober</option>
+                        <option value="10">November</option>
+                        <option value="11">Desember</option>
+                    </select>
+                </div>
+                <div>
+                    <label
+                        class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">Tahun</label>
+                    <select id="f-tahun"
+                        class="w-full bg-slate-100 p-3 rounded-xl text-sm outline-none border-none"></select>
+                </div>
+                <div class="col-span-2 flex gap-2">
+                    <button onclick="renderSemua()"
+                        class="flex-1 bg-blue-600 text-white p-3 rounded-xl text-xs font-bold uppercase shadow-lg shadow-blue-200">Muat</button>
+                    <button onclick="window.print()"
+                        class="bg-slate-200 text-slate-700 px-4 py-3 rounded-xl text-xs font-bold uppercase">Cetak</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="print-area"
+            class="bg-white p-6 md:p-12 shadow-xl border border-slate-200 max-w-5xl mx-auto min-h-screen rounded-sm">
+            <div id="rekap-konten">
+                <p class="text-center text-slate-300 py-20 italic">Silakan klik tombol muat untuk menampilkan data.</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const _supabase = supabase.createClient('https://dgcuojykzhujodcijcgw.supabase.co', 'sb_publishable_oZUTzKxvLf5oXbfLK7vC3A_qvggOb1j');
+        let authMode = 'login';
+        let targetUserId = null;
+
+        // --- SISTEM AUTH ---
+        async function checkSession() {
+            // Deteksi Reset Password
+            if (window.location.hash.includes("type=recovery")) {
+                const newPass = prompt("Masukkan Password Baru:");
+                if (newPass) {
+                    const { error } = await _supabase.auth.updateUser({ password: newPass });
+                    if (!error) alert("Password berhasil diganti!");
+                    window.location.hash = "";
+                }
+            }
+
+            const { data: { session } } = await _supabase.auth.getSession();
+            const urlParams = new URLSearchParams(window.location.search);
+            const viewId = urlParams.get('view');
+
+            if (viewId) {
+                document.body.classList.add('mode-viewer');
+                targetUserId = viewId;
+                document.getElementById('auth-overlay').style.display = 'none';
+                renderSemua();
+            } else if (session) {
+                targetUserId = session.user.id;
+                document.getElementById('auth-overlay').style.display = 'none';
+                renderSemua();
+            }
+        }
+
+        async function handleAuth() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            if (authMode === 'login') {
+                const { error } = await _supabase.auth.signInWithPassword({ email, password });
+                if (error) alert(error.message); else location.reload();
+            } else {
+                const { error } = await _supabase.auth.signUp({ email, password });
+                if (error) alert(error.message); else alert("Cek email konfirmasi!");
+            }
+        }
+
+        function toggleAuthMode() {
+            authMode = authMode === 'login' ? 'signup' : 'login';
+            document.getElementById('auth-title').innerText = authMode === 'login' ? 'E-LOGBOOK PRO' : 'DAFTAR AKUN';
+            document.getElementById('btn-auth').innerText = authMode === 'login' ? 'MASUK' : 'DAFTAR';
+        }
+
+        async function forgotPassword() {
+            const email = document.getElementById('auth-email').value;
+            if (!email) return alert("Masukkan email!");
+            const { error } = await _supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
+            alert(error ? error.message : "Link reset dikirim!");
+        }
+
+        async function logout() { await _supabase.auth.signOut(); location.reload(); }
+
+        function isiTahun() {
+            const s = document.getElementById('f-tahun');
+            const y = new Date().getFullYear();
+            for (let i = y; i >= y - 1; i--) s.add(new Option(i, i));
+        }
+
+        window.onload = () => { isiTahun(); checkSession(); };
+
+        // --- TEMPAT MENEMPEL FUNGSI RENDER (BAGIAN 2) ---
+    </script>
+</body>
+
+</html>
